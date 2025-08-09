@@ -2,7 +2,9 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import TabNavigation from "./components/TabNavigation";
-
+import PageControls from "./components/PageControls";
+import InfiniteScroll from "./components/InfiniteScroll";
+import PokemonDetail from "./components/PokemonDetail";
 
 function App() {
 	return (
@@ -20,7 +22,13 @@ function App() {
 				</header>
 
 				<main className="min-h-screen">
-					<div className=""></div>
+					<div className="">
+						<Routes>
+							<Route path="/" element={<PageControls />} />
+							<Route path="/favorites" element={<InfiniteScroll />} />
+							<Route path="/pokemon/:id" element={<PokemonDetail />} />
+						</Routes>
+					</div>
 				</main>
 			</div>
 		</Router>
