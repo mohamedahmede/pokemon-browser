@@ -1,19 +1,30 @@
-import React from 'react';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./App.css";
+import TabNavigation from "./components/TabNavigation";
+
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1 className="text-4xl font-bold text-white mb-4">
-          Pokémon Browser
-        </h1>
-        <p className='bg-blue-500 text-white px-4 py-2 rounded'>
-          Welcome to your Pokémon adventure!
-        </p>
-      </header>
-    </div>
-  );
+	return (
+		<Router>
+			<div className="App text-center bg-[#eaf0fe]  ">
+				<header className="App-header p-8">
+					<div className="flex items-center justify-center pb-4">
+						<span className="text-yellow-400 text-4xl">⚡</span>
+						<h1 className="text-4xl font-bold">Pokédex</h1>
+					</div>
+					<p className=" text-md opacity-80 pb-4">
+						Discover and explore Pokemon with page controls.
+					</p>
+					<TabNavigation />
+				</header>
+
+				<main className="min-h-screen">
+					<div className=""></div>
+				</main>
+			</div>
+		</Router>
+	);
 }
 
 export default App;
