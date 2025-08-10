@@ -117,7 +117,7 @@ const PokemonDetail: React.FC = () => {
 	}
 
 	return (
-		<div className="container  px-[10rem] py-8">
+		<div className="container px-4  lg:px-[10rem] py-8">
 			<button
 				onClick={() => navigate(-1)}
 				className="mb-6 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -125,7 +125,7 @@ const PokemonDetail: React.FC = () => {
 				← Back to List
 			</button>
 
-			<div className="bg-white rounded-lg shadow-lg overflow-hidden mx-[5rem]">
+			<div className="bg-white rounded-lg shadow-lg overflow-hidden lg:mx-[5rem]">
 				<div className="details-header text-center text-white bg-gradient-to-r from-purple-500 to-pink-500 p-8">
 					<h1 className="text-3xl font-bold  p-4 capitalize">{pokemon.name}</h1>
 					<p className="text-xs sm:text-sm font-medium ">
