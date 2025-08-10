@@ -17,16 +17,18 @@ const PokemonCard: React.FC<PokemonCardProps> = ({
   onClick
 }) => {
   const cardContent = (
-    <div className="p-4 text-center">
-      <img
-        src={pokemon.image}
-        alt={pokemon.name}
-        className="w-24 h-24 mx-auto object-contain"
-      />
-      <h3 className="text-sm font-semibold text-gray-800 mt-2 capitalize">
+    <div className="p-6 text-center">
+             <div className="bg-gray-100 p-2 mb-4">
+         <img
+           src={pokemon.image}
+           alt={pokemon.name}
+           className="w-36 h-36 mx-auto object-contain"
+         />
+       </div>
+      <h3 className="text-base font-bold text-gray-900 mb-2 capitalize">
         {pokemon.name}
       </h3>
-      <p className="text-xs text-gray-500 mt-1">
+      <p className="text-sm font-medium text-gray-600">
         #{pokemon.id.toString().padStart(3, '0')}
       </p>
     </div>

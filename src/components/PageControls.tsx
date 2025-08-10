@@ -42,7 +42,8 @@ const PageControls: React.FC = () => {
 						pokemon={{
 							id: poke.id,
 							name: poke.name,
-							image: poke.sprites.front_default,
+							image: poke.sprites.other.dream_world.front_default,
+							// image: poke.sprites.other.home.front_default,
 						}}
 					/>
 				))}
