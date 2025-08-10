@@ -162,7 +162,7 @@ const InfiniteScroll: React.FC = () => {
 			setPokemon(allPokemon);
 			setLoading(false);
 		}, 300);
-	}, []);
+	}, [allPokemon]);
 
 	if (loading) {
 		return (

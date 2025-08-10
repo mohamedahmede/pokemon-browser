@@ -24,9 +24,9 @@ const TabNavigation: React.FC = () => {
 							Page Controls
 						</Link>
 						<Link
-							to="/favorites"
+							to="/infinite-scroll"
 							className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-								isActive("/favorites")
+								isActive("/infinite-scroll")
 									? "bg-[#19191b] text-white"
 									: "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200"
 							}`}
