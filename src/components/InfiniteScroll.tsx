@@ -1,176 +1,135 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import PokemonCard from "./PokemonCard";
 import SkeletonCard from "./SkeletonCard";
-
-interface Pokemon {
-	id: number;
-	name: string;
-	image: string;
-	types: string[];
-}
+import { usePokemonList } from "../hooks/usePokemonList";
+import { usePokemonDetails } from "../hooks/usePokemonDetails";
 
 const InfiniteScroll: React.FC = () => {
-	const [pokemon, setPokemon] = useState<Pokemon[]>([]);
-	const [loading, setLoading] = useState(true);
+	const [offset, setOffset] = useState(0);
+	const [limit] = useState(20);
+	const [allPokemon, setAllPokemon] = useState<any[]>([]);
+	const [hasMore, setHasMore] = useState(true);
+	const [isLoadingMore, setIsLoadingMore] = useState(false);
+	const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
+	const [isInitialLoad, setIsInitialLoad] = useState(true);
+	const observerRef = useRef<IntersectionObserver | null>(null);
+	const lastPokemonRef = useRef<HTMLDivElement | null>(null);
 
-	// All available Pokemon data
-	const allPokemon: Pokemon[] = [
-		{
-			id: 1,
-			name: "Bulbasaur",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
-			types: ["Grass", "Poison"],
-		},
-		{
-			id: 2,
-			name: "Ivysaur",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png",
-			types: ["Grass", "Poison"],
-		},
-		{
-			id: 3,
-			name: "Venusaur",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png",
-			types: ["Grass", "Poison"],
-		},
-		{
-			id: 4,
-			name: "Charmander",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png",
-			types: ["Fire"],
-		},
-		{
-			id: 5,
-			name: "Charmeleon",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png",
-			types: ["Fire"],
-		},
-		{
-			id: 6,
-			name: "Charizard",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png",
-			types: ["Fire", "Flying"],
-		},
-		{
-			id: 7,
-			name: "Squirtle",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png",
-			types: ["Water"],
-		},
-		{
-			id: 8,
-			name: "Wartortle",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/8.png",
-			types: ["Water"],
-		},
-		{
-			id: 9,
-			name: "Blastoise",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png",
-			types: ["Water"],
-		},
-		{
-			id: 10,
-			name: "Caterpie",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10.png",
-			types: ["Bug"],
-		},
-		{
-			id: 11,
-			name: "Metapod",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/11.png",
-			types: ["Bug"],
-		},
-		{
-			id: 12,
-			name: "Butterfree",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/12.png",
-			types: ["Bug", "Flying"],
-		},
-		{
-			id: 13,
-			name: "Weedle",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/13.png",
-			types: ["Bug", "Poison"],
-		},
-		{
-			id: 14,
-			name: "Kakuna",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/14.png",
-			types: ["Bug", "Poison"],
-		},
-		{
-			id: 15,
-			name: "Beedrill",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/15.png",
-			types: ["Bug", "Poison"],
-		},
-		{
-			id: 16,
-			name: "Pidgey",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png",
-			types: ["Normal", "Flying"],
-		},
-		{
-			id: 17,
-			name: "Pidgeotto",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/17.png",
-			types: ["Normal", "Flying"],
-		},
-		{
-			id: 18,
-			name: "Pidgeot",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/18.png",
-			types: ["Normal", "Flying"],
-		},
-		{
-			id: 19,
-			name: "Rattata",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png",
-			types: ["Normal"],
-		},
-		{
-			id: 20,
-			name: "Raticate",
-			image:
-				"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/20.png",
-			types: ["Normal"],
-		},
-	];
+	const handleImageLoad = useCallback((pokemonId: number) => {
+		setLoadedImages((prev) => {
+			const newSet = new Set(Array.from(prev));
+			newSet.add(pokemonId);
+			return newSet;
+		});
+	}, []);
+
+	const { data: pokemonList, isLoading: isListLoading } = usePokemonList(
+		offset,
+		limit
+	);
+
+	const pokemonUrls =
+		pokemonList?.results?.map((pokemon: any) => pokemon.url) || [];
+	const { data: pokemonDetails, isLoading: isDetailsLoading } =
+		usePokemonDetails(pokemonUrls);
 
 	useEffect(() => {
-		// Simulate API call delay
-		setTimeout(() => {
-			setPokemon(allPokemon);
-			setLoading(false);
-		}, 300);
-	}, [allPokemon]);
+		if (pokemonDetails && pokemonDetails.length > 0) {
+			setAllPokemon((prev) => {
+				const newPokemon = [...prev];
+				pokemonDetails.forEach((poke: any) => {
+					const existingIndex = newPokemon.findIndex((p) => p.id === poke.id);
+					if (existingIndex === -1) {
+						newPokemon.push(poke);
+					}
+				});
+				return newPokemon;
+			});
+			setHasMore(pokemonDetails.length === limit);
+			
+			if (isInitialLoad) {
+				setIsInitialLoad(false);
+			}
+		}
+	}, [pokemonDetails, limit, isInitialLoad]);
+
+	useEffect(() => {
+		setLoadedImages(new Set());
+		
+		const fallbackTimer = setTimeout(() => {
+			if (pokemonDetails && pokemonDetails.length > 0) {
+				const allIds = pokemonDetails.map((poke: any) => poke.id);
+				setLoadedImages(new Set(allIds));
+			}
+		}, 2000);
+		
+		return () => clearTimeout(fallbackTimer);
+	}, [offset, pokemonDetails]);
+
+	useEffect(() => {
+		if (
+			pokemonDetails &&
+			pokemonDetails.length > 0 &&
+			loadedImages.size === 0
+		) {
+			const immediateTimer = setTimeout(() => {
+				if (loadedImages.size === 0) {
+					const allIds = pokemonDetails.map((poke: any) => poke.id);
+					setLoadedImages(new Set(allIds));
+				}
+			}, 500);
+			
+			return () => clearTimeout(immediateTimer);
+		}
+	}, [pokemonDetails]);
+
+	useEffect(() => {
+		if (
+			pokemonDetails &&
+			pokemonDetails.length > 0 &&
+			!isListLoading &&
+			!isDetailsLoading &&
+			loadedImages.size === 0
+		) {
+			const apiReadyTimer = setTimeout(() => {
+				if (loadedImages.size === 0) {
+					const allIds = pokemonDetails.map((poke: any) => poke.id);
+					setLoadedImages(new Set(allIds));
+				}
+			}, 1000);
+			
+			return () => clearTimeout(apiReadyTimer);
+		}
+	}, [pokemonDetails, isListLoading, isDetailsLoading, loadedImages.size]);
+
+	const loadMore = useCallback(() => {
+		if (!isLoadingMore && hasMore) {
+			setIsLoadingMore(true);
+			setOffset((prev) => prev + limit);
+			setTimeout(() => setIsLoadingMore(false), 500);
+		}
+	}, [isLoadingMore, hasMore, limit]);
+
+	const lastPokemonElementRef = useCallback((node: HTMLDivElement | null) => {
+		if (isListLoading) return;
+		if (observerRef.current) observerRef.current.disconnect();
+		
+		observerRef.current = new IntersectionObserver((entries) => {
+			if (entries[0].isIntersecting && hasMore) {
+				loadMore();
+			}
+		});
+		
+		if (node) observerRef.current.observe(node);
+		lastPokemonRef.current = node;
+	}, [isListLoading, hasMore, loadMore]);
 
 
 
-	if (loading) {
+	if (isInitialLoad && (isListLoading || isDetailsLoading)) {
 		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+			<div className="container mx-auto px-8 md:px-16 lg:px-24 xl:px-32 py-8">
+				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xxl:grid-cols-5 gap-3 gap-4">
 					{Array.from({ length: 20 }).map((_, index) => (
 						<SkeletonCard key={index} />
 					))}
@@ -180,11 +139,63 @@ const InfiniteScroll: React.FC = () => {
 	}
 
 	return (
-		<div className="container mx-auto px-4 py-8">
-			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-				{pokemon.map((poke) => (
-					<PokemonCard key={poke.id} pokemon={poke} />
-				))}
+		<div className="container mx-auto px-8 md:px-16 lg:px-24 xl:px-32 py-8">
+			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xxl:grid-cols-5 gap-3 gap-4">
+				{allPokemon.map((poke: any, index: number) => {
+					if (allPokemon.length === index + 1) {
+						return (
+							<div key={poke.id} ref={lastPokemonElementRef}>
+								<PokemonCard
+									pokemon={{
+										id: poke?.id,
+										name: poke?.name,
+										image:
+											poke?.sprites?.other?.home?.front_default ||
+											poke?.sprites?.front_default ||
+											`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${poke?.id}.png`,
+									}}
+									onImageLoad={() => handleImageLoad(poke.id)}
+								/>
+							</div>
+						);
+					}
+					return (
+						<PokemonCard
+							key={poke.id}
+							pokemon={{
+								id: poke?.id,
+								name: poke?.name,
+								image:
+									poke?.sprites?.other?.home?.front_default ||
+									poke?.sprites?.front_default ||
+									`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${poke?.id}.png`,
+							}}
+							onImageLoad={() => handleImageLoad(poke.id)}
+						/>
+					);
+				})}
+			</div>
+
+			{isLoadingMore && (
+				<div className="text-center py-8">
+					<div className="inline-flex items-center space-x-2">
+						<div className="w-4 h-4 bg-green-500 rounded-full animate-spin"></div>
+						<span className="text-green-600">Loading more Pokemon...</span>
+					</div>
+				</div>
+			)}
+
+			{!isInitialLoad && (isListLoading || isDetailsLoading) && (
+				<div className="text-center py-4">
+					<div className="inline-flex items-center space-x-2">
+						<div className="w-4 h-4 bg-blue-500 rounded-full animate-spin"></div>
+						<span className="text-blue-600">Loading...</span>
+					</div>
+				</div>
+			)}
+
+			<div className="text-center py-4 text-gray-600">
+				Showing {allPokemon.length} Pokemon
 			</div>
 		</div>
 	);
