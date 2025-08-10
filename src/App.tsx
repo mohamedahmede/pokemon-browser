@@ -10,12 +10,12 @@ function App() {
 	const location = useLocation();
 	return (
 		<div
-			className={`App bg-${
+			className={`App ${
 				location.pathname === "/infinite-scroll"
-					? "[#d6fce7]"
+					? "bg-green-100"
 					: location.pathname !== "/"
-					? "[#faedf7]"
-					: "[#eaf0fe]"
+					? "bg-pink-50"
+					: "bg-blue-50"
 			}`}
 		>
 			{(location.pathname === "/" ||
