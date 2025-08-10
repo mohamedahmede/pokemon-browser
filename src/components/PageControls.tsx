@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PokemonCard from "./PokemonCard";
 import Pagination from "./Pagination";
+import SkeletonCard from "./SkeletonCard";
 import { usePokemonList } from "../hooks/usePokemonList";
 import { usePokemonDetails } from "../hooks/usePokemonDetails";
 
@@ -16,8 +17,10 @@ const PageControls: React.FC = () => {
 	const [limit, setLimit] = useState(20);
 
 	// Fetch the list of Pokémon
-	const { data: pokemonList, isLoading: isListLoading } =
-		usePokemonList(offset, limit);
+	const { data: pokemonList, isLoading: isListLoading } = usePokemonList(
+		offset,
+		limit
+	);
 
 	// Fetch details for the Pokémon in the list
 	const pokemonUrls =
@@ -25,10 +28,16 @@ const PageControls: React.FC = () => {
 	const { data: pokemonDetails, isLoading: isDetailsLoading } =
 		usePokemonDetails(pokemonUrls);
 
+
+
 	if (isListLoading || isDetailsLoading) {
 		return (
-			<div className="flex justify-center items-center h-64">
-				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+			<div className="container mx-auto px-4 py-8">
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+					{Array.from({ length: limit }).map((_, index) => (
+						<SkeletonCard key={index} />
+					))}
+				</div>
 			</div>
 		);
 	}
@@ -40,17 +49,15 @@ const PageControls: React.FC = () => {
 					<PokemonCard
 						key={poke.id}
 						pokemon={{
-							id: poke.id,
-							name: poke.name,
-							image: poke.sprites.other.dream_world.front_default,
+							id: poke?.id,
+							name: poke?.name,
+							image: poke?.sprites?.other?.dream_world?.front_default,
 							// image: poke.sprites.other.home.front_default,
 						}}
 					/>
 				))}
 			</div>
-			
 
-			
 			{/* Pagination Controls */}
 			<Pagination
 				currentPage={Math.floor(offset / limit) + 1}

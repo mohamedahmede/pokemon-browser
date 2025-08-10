@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PokemonCard from "./PokemonCard";
+import SkeletonCard from "./SkeletonCard";
 
 interface Pokemon {
 	id: number;
@@ -164,10 +165,16 @@ const InfiniteScroll: React.FC = () => {
 		}, 300);
 	}, [allPokemon]);
 
+
+
 	if (loading) {
 		return (
-			<div className="flex justify-center items-center h-64">
-				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+			<div className="container mx-auto px-4 py-8">
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+					{Array.from({ length: 20 }).map((_, index) => (
+						<SkeletonCard key={index} />
+					))}
+				</div>
 			</div>
 		);
 	}
